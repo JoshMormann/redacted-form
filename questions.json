@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "title": "Asset Intake",
+  "flow": [
+    {
+      "id": "received_pkg",
+      "type": "boolean",
+      "prompt": "Asset, have you received the package? [Y/N]"
+    },
+    {
+      "id": "purpose_contact_early",
+      "type": "textarea",
+      "prompt": "Please state the purpose of this contact:",
+      "maxLength": 3000,
+      "required": false,
+      "conditions": [{ "if": { "received_pkg": false } }]
+    },
+    {
+      "id": "purpose_contact_early_end",
+      "type": "system",
+      "message": "You will be contacted should we deem necessary at a time of our choosing.\n…Session Ended.",
+      "conditions": [{ "if": { "received_pkg": false } }],
+      "end": true
+    },
+
+    { "id": "humorous",
+      "type": "boolean",
+      "prompt": "Did you find the contents of the package, ‘humorous’? [Y/N]",
+      "conditions": [{ "if": { "received_pkg": true } }]
+    },
+
+    { "id": "played_game",
+      "type": "boolean",
+      "prompt": "Have you played ‘the game’? [Y/N]",
+      "conditions": [{ "if": { "received_pkg": true } }]
+    },
+
+    { "id": "purpose_contact_mid",
+      "type": "textarea",
+      "prompt": "Please state the purpose of this contact:",
+      "maxLength": 3000,
+      "conditions": [{ "if": { "received_pkg": true, "played_game": false } }]
+    },
+    {
+      "id": "purpose_contact_mid_end",
+      "type": "system",
+      "message": "You will be contacted should we deem necessary at a time of our choosing.\n…Session Ended.",
+      "conditions": [{ "if": { "received_pkg": true, "played_game": false } }],
+      "end": true
+    },
+
+    { "id": "acceptable",
+      "type": "boolean",
+      "prompt": "Did you find the rules and ‘gameplay’ to be acceptable? [Y/N]",
+      "conditions": [{ "if": { "received_pkg": true, "played_game": true } }]
+    },
+
+    { "id": "explain",
+      "type": "textarea",
+      "prompt": "Explain yourself, Asset…",
+      "maxLength": 6000,
+      "conditions": [{ "if": { "received_pkg": true, "played_game": true, "acceptable": false } }]
+    },
+    {
+      "id": "explain_end",
+      "type": "system",
+      "message": "You will be contacted should we deem necessary at a time of our choosing.\n…Session Ended.",
+      "conditions": [{ "if": { "received_pkg": true, "played_game": true, "acceptable": false } }],
+      "end": true
+    },
+
+    { "id": "further_comment",
+      "type": "textarea",
+      "prompt": "Do you have further comment?",
+      "maxLength": 3000,
+      "conditions": [{ "if": { "received_pkg": true, "played_game": true, "acceptable": true } }]
+    },
+    {
+      "id": "final_end",
+      "type": "system",
+      "message": "You will be contacted should we deem necessary at a time of our choosing.\n…Session Ended.",
+      "conditions": [{ "if": { "received_pkg": true, "played_game": true, "acceptable": true } }],
+      "end": true
+    }
+  ]
+}
+
