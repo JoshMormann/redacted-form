@@ -9,6 +9,7 @@ window.REDACTED_FORM_CONFIG = window.REDACTED_FORM_CONFIG || {
   TYPE_VARIANCE: 12,        // random +/- jitter in ms
   TYPE_PAUSE_MS: 600,       // pause before typing begins
   ALLOW_TYPE_SKIP: true,    // allow Enter to skip typing animation
-  INPUT_AT_BOTTOM: true
+  INPUT_AT_BOTTOM: true,
+  SOUND_ENABLED: true
 };
 

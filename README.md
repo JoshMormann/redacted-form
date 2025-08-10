@@ -28,7 +28,7 @@ Alternative:
 - You can open index.html directly, but some browsers restrict local fetch of questions.json.
 
 ## Configuration
-All runtime config is in config.js (or you can create an ignored config.local.js if desired).
+All runtime config is in config.js (and you can create an ignored config.local.js for secrets).
 
 Example config.js:
 ```
@@ -86,6 +86,8 @@ Example conditional end:
 ## Keyboard commands
 - `back`: return to the previous prompt (clears its saved answer)
 - `help`: display available commands
+- `t`: toggle theme (green/amber)
+- `m`: mute/unmute subtle typing beeps
 - For boolean prompts: `Y/N` (case-insensitive), also accepts `yes/no`
 
 ## Accessibility & UX notes
@@ -95,6 +97,8 @@ Example conditional end:
 
 ## Development
 - No build step required; vanilla HTML/CSS/JS
+- Local overrides: create config.local.js (ignored by git) to store webhook URL and auth header for your environment.
+- Hidden fields from query string: fn, ln, email are captured and sent in payload.meta.user.
 - Files:
   - index.html: app shell and DOM
   - style.css: CRT theme and responsive styles

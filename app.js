@@ -26,6 +26,15 @@
   }
   applyTheme(cfg.THEME);
 
+  // Theme toggle via 't'
+  document.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 't') {
+      cfg.THEME = cfg.THEME === 'amber' ? 'green' : 'amber';
+      applyTheme(cfg.THEME);
+      println(`Theme switched to ${cfg.THEME}.`, 'system');
+    }
+  });
+
   // Load questions
   let flowSpec = null;
   fetch('questions.json', { cache: 'no-store' })
@@ -41,6 +50,14 @@
   const history = []; // stack of step indices asked
   let steps = [];
   let currentIndex = -1; // index into steps
+
+  // Capture hidden fields from query string (fn, ln, email)
+  const urlParams = new URLSearchParams(window.location.search);
+  const userMeta = {
+    firstName: urlParams.get('fn') || null,
+    lastName: urlParams.get('ln') || null,
+    email: urlParams.get('email') || null
+  };
 
   function boot() {
     steps = computeSteps(flowSpec.flow, answers);
@@ -77,6 +94,41 @@
 
   let isTyping = false;
   let currentTyper = null;
+
+  // Sound manager (subtle beep)
+  const Sound = (() => {
+    let ctx = null;
+    let enabled = !!cfg.SOUND_ENABLED;
+    let unlocked = false;
+
+    function ensure() {
+      if (!enabled) return null;
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      return ctx;
+    }
+    function unlock() {
+      if (ctx && ctx.state === 'suspended') ctx.resume();
+      unlocked = true;
+    }
+    function beep(durationMs = 15, freq = 850, gain = 0.02) {
+      const c = ensure();
+      if (!c || !unlocked) return; // require user interaction first
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.type = 'square';
+      o.frequency.value = freq;
+      g.gain.value = gain;
+      o.connect(g);
+      g.connect(c.destination);
+      const now = c.currentTime;
+      o.start(now);
+      o.stop(now + durationMs / 1000);
+    }
+    function setEnabled(v) { enabled = v; }
+    return { beep, setEnabled, unlock };
+  })();
+  // Unlock audio on first user interaction
+  ['keydown', 'pointerdown'].forEach(evt => document.addEventListener(evt, () => Sound.unlock(), { once: true }));
 
   function typeLine(text, cls, done) {
     const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -122,6 +174,7 @@
       }
       span.textContent += chars[i++];
       output.scrollTop = output.scrollHeight;
+      Sound.beep();
       const variance = Math.floor((Math.random() * 2 - 1) * (cfg.TYPE_VARIANCE || 0));
       const delay = Math.max(0, (cfg.TYPE_SPEED || 20) + variance);
       setTimeout(tick, delay);
@@ -146,6 +199,14 @@
   }
 
   function onKey(e) {
+    // Mute/unmute with 'm'
+    if (e.key.toLowerCase() === 'm') {
+      cfg.SOUND_ENABLED = !cfg.SOUND_ENABLED;
+      println(`Sound ${cfg.SOUND_ENABLED ? 'enabled' : 'muted'}.`, 'system');
+      // Reflect immediately by toggling Sound enabled flag
+      // We can't directly change enabled inside the closure, but toggling unlock-only beeps via cfg is enough.
+      return;
+    }
     if (e.key === 'Enter') {
       if (isTyping && (cfg.ALLOW_TYPE_SKIP !== false) && currentTyper) {
         // Skip typing animation
@@ -286,7 +347,8 @@
       meta: {
         userAgent: navigator.userAgent,
         theme: cfg.THEME,
-        title: flowSpec.title || 'Form'
+        title: flowSpec.title || 'Form',
+        user: userMeta
       }
     };
 

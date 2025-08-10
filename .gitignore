@@ -1,0 +1,5 @@
+# Local configs / secrets
+config.local.js
+.env.local
+node_modules/
+.DS_Store
