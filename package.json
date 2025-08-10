@@ -1,0 +1,13 @@
+{
+  "name": "redacted-form",
+  "private": true,
+  "scripts": {
+    "start": "http-server -p 8080 -c-1 .",
+    "start:python": "python3 -m http.server 8080",
+    "serve": "npm run start"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
+

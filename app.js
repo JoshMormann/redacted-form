@@ -11,6 +11,10 @@
   const input = qs('#cli-input');
   const hint = qs('#hint');
 
+  // Update header alt from config if provided
+  const headerImg = document.getElementById('header-img');
+  if (headerImg && cfg.HEADER_ALT) headerImg.alt = cfg.HEADER_ALT;
+
   // Theme support: green or amber
   function applyTheme(theme) {
     const root = document.documentElement;
@@ -71,6 +75,62 @@
     output.scrollTop = output.scrollHeight;
   }
 
+  let isTyping = false;
+  let currentTyper = null;
+
+  function typeLine(text, cls, done) {
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      println(text, cls);
+      done && done();
+      return;
+    }
+    isTyping = true;
+    input.disabled = true;
+
+    const line = document.createElement('div');
+    line.className = cls || 'line';
+    const span = document.createElement('span');
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    line.appendChild(span);
+    line.appendChild(cursor);
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+
+    const chars = Array.from(text);
+    let i = 0;
+    let skipped = false;
+
+    function finish() {
+      cursor.remove();
+      isTyping = false;
+      input.disabled = false;
+      done && done();
+    }
+
+    function tick() {
+      if (skipped) {
+        span.textContent = text;
+        output.scrollTop = output.scrollHeight;
+        finish();
+        return;
+      }
+      if (i >= chars.length) {
+        finish();
+        return;
+      }
+      span.textContent += chars[i++];
+      output.scrollTop = output.scrollHeight;
+      const variance = Math.floor((Math.random() * 2 - 1) * (cfg.TYPE_VARIANCE || 0));
+      const delay = Math.max(0, (cfg.TYPE_SPEED || 20) + variance);
+      setTimeout(tick, delay);
+    }
+
+    currentTyper = { skip: () => { skipped = true; } };
+    setTimeout(tick, cfg.TYPE_PAUSE_MS || 500);
+  }
+
   function printQuestion(node) {
     let q = node.prompt;
     if (node.type === 'boolean') {
@@ -82,11 +142,17 @@
     } else if (node.type === 'system') {
       hint.textContent = '';
     }
-    println(q, 'question');
+    typeLine(q, 'question', () => { input.focus(); });
   }
 
   function onKey(e) {
     if (e.key === 'Enter') {
+      if (isTyping && (cfg.ALLOW_TYPE_SKIP !== false) && currentTyper) {
+        // Skip typing animation
+        currentTyper.skip();
+        e.preventDefault();
+        return;
+      }
       const raw = input.value.trim();
       handleInput(raw);
       input.value = '';
@@ -174,14 +240,16 @@
 
     const node = steps[currentIndex];
     if (node.type === 'system') {
-      println(node.message, 'system');
-      if (node.end) {
-        submit();
-        return;
-      }
-      // otherwise continue to next
-      history.push(currentIndex);
-      advance();
+      // Type out system message too
+      typeLine(node.message, 'system', () => {
+        if (node.end) {
+          submit();
+          return;
+        }
+        // otherwise continue to next
+        history.push(currentIndex);
+        advance();
+      });
       return;
     }
 

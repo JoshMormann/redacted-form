@@ -15,13 +15,17 @@ A self-contained, static web app that collects responses through a sequential, C
   - Otherwise: saves to localStorage as an offline fallback
 
 ## Quick start
-1) Open locally (simple):
-- Open index.html directly in your browser; or
+1) Local dev server (recommended):
+- npm install
+- npm run start
+Then visit http://localhost:8080
 
-2) Serve with a static server (recommended to avoid local file CORS):
+Alternative:
 - Python: `python3 -m http.server 8080`
 - Node: `npx http-server -p 8080`
-Then visit http://localhost:8080
+
+2) Open directly (simple):
+- You can open index.html directly, but some browsers restrict local fetch of questions.json.
 
 ## Configuration
 All runtime config is in config.js (or you can create an ignored config.local.js if desired).
@@ -107,6 +111,13 @@ Example conditional end:
 - Custom ASCII logo/seal and title from config
 
 ## Deployment
+### Netlify
+- This repo includes netlify.toml configured to serve from the repository root with no build step.
+- Connect the GitHub repo to Netlify and enable continuous deployment. On each push to main, Netlify will deploy.
+- Build settings:
+  - Build command: empty
+  - Publish directory: /
+
 This is a static site and can be served by any static host (Vercel, Netlify, GitHub Pages, S3/CloudFront, etc.). Ensure config.js points WEBHOOK_URL at your production workflow and that secrets are not committed.
 
 ## License
