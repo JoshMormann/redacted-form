@@ -104,6 +104,7 @@
 
   let isTyping = false;
   let currentTyper = null;
+  let submitted = false; // lock after submission
 
   // Sound manager (subtle beep)
   const Sound = (() => {
@@ -209,6 +210,10 @@
   }
 
   function onKey(e) {
+    if (submitted) {
+      e.preventDefault();
+      return; // ignore all keys after submission
+    }
     // Mute/unmute requires Alt+M to avoid interfering with typing
     if (e.altKey && e.key.toLowerCase() === 'm') {
       e.preventDefault();
@@ -238,6 +243,7 @@
   }
 
   function handleInput(raw) {
+    if (submitted) return; // guard
     const node = steps[currentIndex];
 
     // Global commands
@@ -348,6 +354,15 @@
   }
 
   function submit() {
+    if (submitted) {
+      println('Session already submitted. Input is locked.', 'system');
+      return;
+    }
+    submitted = true;
+    // lock UI
+    input.disabled = true;
+    hint.textContent = 'Session locked. Refresh to start a new session.';
+
     println('Transmitting…', 'system');
     const payload = {
       submissionId: cryptoRandomId(),
