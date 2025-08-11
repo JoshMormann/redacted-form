@@ -1,5 +1,5 @@
 [build]
 publish = "/"
-# Build command writes a config override if NETLIFY_WEBHOOK_URL is set
-command = "bash netlify-build.sh"
+# Build command writes a config override if NETLIFY_* env vars are set
+command = "node netlify-build.cjs"
 
