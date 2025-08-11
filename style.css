@@ -3,7 +3,8 @@
   --term-bg: #0a0f0a;
   --term-fg: #9cff9c;
   --term-dim: #4ea84e;
-  --term-amber-fg: #ffbf66;
+  --term-amber-fg: #ffb74d; /* deeper amber */
+  --term-amber-dim: #c4822e; /* darker dim for contrast */
   --scanline: rgba(0, 0, 0, 0.15);
   --glow: 0 0 6px rgba(156, 255, 156, 0.6), 0 0 24px rgba(156, 255, 156, 0.2);
 }
@@ -135,4 +136,9 @@ body {
   50% { opacity: 0.98; }
 }
 body { animation: crt-flicker 2.8s infinite; }
+
+/* Amber theme background + glow */
+[data-theme="amber"] body {
+  background: radial-gradient(ellipse at center, #130e07 0%, #0d0a06 60%, #0a0705 100%);
+}
 

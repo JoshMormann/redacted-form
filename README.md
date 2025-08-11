@@ -86,8 +86,8 @@ Example conditional end:
 ## Keyboard commands
 - `back`: return to the previous prompt (clears its saved answer)
 - `help`: display available commands
-- `t`: toggle theme (green/amber)
-- `m`: mute/unmute subtle typing beeps
+- Alt+T: toggle theme (green/amber)
+- Alt+M: mute/unmute subtle typing beeps
 - For boolean prompts: `Y/N` (case-insensitive), also accepts `yes/no`
 
 ## Accessibility & UX notes

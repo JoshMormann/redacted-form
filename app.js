@@ -18,17 +18,27 @@
   // Theme support: green or amber
   function applyTheme(theme) {
     const root = document.documentElement;
+    root.setAttribute('data-theme', theme);
     if (theme === 'amber') {
-      root.style.setProperty('--term-fg', getComputedStyle(root).getPropertyValue('--term-amber-fg'));
-      root.style.setProperty('--term-dim', '#b98a4a');
-      root.style.setProperty('--glow', '0 0 6px rgba(255, 191, 102, 0.6), 0 0 24px rgba(255, 191, 102, 0.2)');
+      const styles = getComputedStyle(root);
+      root.style.setProperty('--term-fg', styles.getPropertyValue('--term-amber-fg'));
+      root.style.setProperty('--term-dim', styles.getPropertyValue('--term-amber-dim') || '#b3752a');
+      root.style.setProperty('--glow', '0 0 6px rgba(255, 183, 77, 0.6), 0 0 24px rgba(255, 183, 77, 0.25)');
+    } else {
+      // reset to green defaults
+      root.style.removeProperty('--term-fg');
+      root.style.removeProperty('--term-dim');
+      root.style.removeProperty('--glow');
     }
   }
   applyTheme(cfg.THEME);
 
   // Theme toggle via 't'
   document.addEventListener('keydown', (e) => {
+    // Require Alt/Option as a modifier to avoid toggles while typing
+    if (!e.altKey) return;
     if (e.key.toLowerCase() === 't') {
+      e.preventDefault();
       cfg.THEME = cfg.THEME === 'amber' ? 'green' : 'amber';
       applyTheme(cfg.THEME);
       println(`Theme switched to ${cfg.THEME}.`, 'system');
@@ -199,12 +209,11 @@
   }
 
   function onKey(e) {
-    // Mute/unmute with 'm'
-    if (e.key.toLowerCase() === 'm') {
+    // Mute/unmute requires Alt+M to avoid interfering with typing
+    if (e.altKey && e.key.toLowerCase() === 'm') {
+      e.preventDefault();
       cfg.SOUND_ENABLED = !cfg.SOUND_ENABLED;
       println(`Sound ${cfg.SOUND_ENABLED ? 'enabled' : 'muted'}.`, 'system');
-      // Reflect immediately by toggling Sound enabled flag
-      // We can't directly change enabled inside the closure, but toggling unlock-only beeps via cfg is enough.
       return;
     }
     if (e.key === 'Enter') {
@@ -375,14 +384,16 @@
       method: 'POST',
       headers,
       body: JSON.stringify(payload)
-    }).then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    }).then(async r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText}`);
       println('Transmission acknowledged.', 'success');
     }).catch(err => {
-      println('Transmission failed. Buffered locally for retry.', 'error');
+      println(`Transmission failed: ${String(err)}.`, 'error');
+      println(`Check WEBHOOK_URL and CORS settings on the webhook. URL: ${cfg.WEBHOOK_URL || 'unset'}`, 'system');
       try {
         const key = `redacted_form_buffer_${Date.now()}`;
         localStorage.setItem(key, JSON.stringify(payload));
+        println('Buffered locally for retry.', 'system');
       } catch {}
     });
   }
