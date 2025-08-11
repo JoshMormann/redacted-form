@@ -39,10 +39,5 @@ fi
 # We'll add a reference to config.deploy.js in index.html so deploy overrides apply.
 
 # Insert the script tag if not already present
-if ! grep -q "config.deploy.js" index.html; then
-  # Add before app.js reference
-  perl -0777 -pe "s#(\s*<script src=\"config.local.js\" defer></script>\n\s*)<script src=\"app.js\" defer></script>#\1<script src=\"config.deploy.js\" defer></script>\n  <script src=\"app.js\" defer></script>#" -i index.html
-fi
-
 echo "Netlify build: config.deploy.js generated with webhook/auth/theme if provided."
 
